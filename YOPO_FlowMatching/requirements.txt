@@ -1,0 +1,12 @@
+# The yopo_fm Docker image already provides these packages.
+torch
+numpy
+opencv-python
+scipy
+scikit-learn
+open3d
+ruamel-yaml
+tensorboard
+matplotlib
+tqdm
+rich

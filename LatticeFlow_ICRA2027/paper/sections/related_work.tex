@@ -1,0 +1,13 @@
+\section{Related Work}
+
+\subsection{Vision-Based Quadrotor Planning}
+
+Classical local planners combine mapping, kinodynamic search, and polynomial or spline optimization. Topology-guided and fast planners obtain trajectories from distinct path classes or front-end seeds~\cite{zhou2019robust,ye2021tgk,zhou2019fast}, but maintain an explicit world representation and repeatedly optimize online. Learning-based alternatives predict collision likelihoods, commands, or local trajectories from onboard sensing. Representative systems include simulation-to-real single-image avoidance~\cite{sadeghi2017cad2rl}, reaction-based local planning~\cite{lu2023lpnet}, learned perception combined with minimum-time planning~\cite{penicka2022minimum}, high-speed flight in natural environments~\cite{loquercio2021learning}, and perception-aware trajectories for dynamic scenes~\cite{tordesillas2023deep}. One-stage spherical-lattice prediction further unifies perception, primitive selection, and terminal-state regression~\cite{lu2024yopo}; our focus is instead how to transport structured primitive anchors toward self-improved endpoints.
+
+\subsection{Motion Primitives and Structured Multimodality}
+
+Motion primitives discretize local planning into dynamically meaningful hypotheses and support efficient feasibility evaluation~\cite{nguyen2022motion}. A fixed bank can be restrictive, whereas residual terminal-state prediction adapts each primitive to the observation. We reinterpret this bank as a conditional source set for a neural ODE. Multimodality is carried by different cells rather than by repeated random sampling within a cell, which is well suited to deterministic high-rate replanning.
+
+\subsection{Diffusion, Flow, and Policy Improvement}
+
+Diffusion Policy represents multimodal robot behavior through iterative denoising~\cite{chi2023diffusion}. Flow matching directly regresses a time-dependent velocity field~\cite{lipman2023flow}, and rectified flow favors efficient near-straight transport~\cite{liu2023rectified}. A2A replaces Gaussian noise with historical actions to predict future action latents~\cite{jia2026a2a}. We adopt the informative-source principle but use geometry when histories are absent. We also replace demonstration targets with detached policy proposals refined by training-only trajectory costs. Because continuous within-cell transport does not prevent discrete score changes between cells, continuity regularization and post-network selection are treated as distinct mechanisms.

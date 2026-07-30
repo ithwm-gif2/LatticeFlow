@@ -1,0 +1,122 @@
+project:
+  name: LatticeFlow_TeacherFree_PhysicalAnchor_LiDAR_DA_V2_ICRA2027
+  output_root: /home/hwm/CF_YOPO/YOPO_FlowMatching/runs
+  teacher_checkpoint: /home/hwm/CF_YOPO/YOPO_FlowMatching/runs/icra2027_yopo_seed0/checkpoints/best.pth
+  evaluation_baseline_checkpoint: /home/hwm/CF_YOPO/YOPO_FlowMatching/runs/icra2027_yopo_seed0/checkpoints/best.pth
+  initialize_backbone_from_teacher: false
+  initialize_from_checkpoint: /home/hwm/CF_YOPO/YOPO_FlowMatching/runs/icra2027_teacher_free_physical_seed0/checkpoints/best.pt
+  zero_initialize_flow_output: false
+  policy_variant: physical_anchor
+  training_regime: frozen_source_perception_domain_adaptation
+
+data:
+  root: /workspace/YOPO/dataset
+  train_maps: [0, 1, 2, 3, 4, 5, 6]
+  valid_maps: [7]
+  test_maps: [8, 9]
+
+runtime:
+  device: cuda
+  seed: 0
+  amp: false
+  num_workers: 4
+
+model:
+  image_feature_dim: 64
+  hidden_dim: 256
+  time_dim: 32
+  lattice_embed_dim: 16
+  flow_layers: 4
+  integration_steps: 6
+  clamp_state: true
+
+training:
+  epochs: 10
+  batch_size: 16
+  learning_rate: 0.00002
+  weight_decay: 0.000001
+  max_grad_norm: 1.0
+  save_every: 1
+  validate_every: 1
+  max_train_batches: null
+  max_val_batches: null
+  source_noise_std: 0.0
+
+loss_weights:
+  flow: 0.0
+  endpoint: 0.0
+  trajectory: 0.0
+  score: 0.0
+  depth_safety: 1.0
+  local_consistency: 0.0
+  lattice_curvature: 0.0
+  domain_consistency: 1.0
+
+# Dense simulator depth is converted into a final policy input whose 20 m
+# no-return fraction matches the measured real pipeline (about 0.73--0.76).
+# Privileged map/ESDF costs continue to use the original dense observation.
+lidar_domain:
+  enabled: true
+  reference_checkpoint: /home/hwm/CF_YOPO/YOPO_FlowMatching/runs/icra2027_teacher_free_physical_seed0/checkpoints/best.pt
+  backbone_only: true
+  probability: 1.0
+  target_far_ratio: [0.68, 0.80]
+  validation_far_ratio: 0.76
+  far_threshold: 0.999
+  block_height: 8
+  block_width: 10
+  pixel_priority_weight: 0.35
+  block_priority_weight: 0.35
+  scanline_priority_weight: 0.20
+  near_priority_weight: 0.10
+  noise_std: 0.003
+  range_noise_std: 0.006
+  quantization: 0.0009765625
+  feature_weight: 1.00
+  endpoint_weight: 1.00
+  score_weight: 0.25
+  vertical_weight: 1.00
+  trajectory_vertical_weight: 2.00
+  trajectory_samples: 11
+  level_goal_z_threshold: 0.50
+  objective_endpoint_weight: 1.00
+  objective_vertical_curve_weight: 1.00
+  objective_score_weight: 0.25
+  selection_metric: val_lidar/domain_objective
+
+# The previous model already learned local small-noise continuity. During
+# LiDAR adaptation the dense/sparse domain consistency term replaces this
+# additional forward pass to keep training cost bounded.
+continuity:
+  enabled: false
+  depth_noise_std: 0.005
+  observation_noise_std: [0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.10, 0.10, 0.10]
+  endpoint_weight: 1.0
+  score_weight: 0.25
+
+target_refinement:
+  enabled: true
+  include_student_seed: true
+  student_start_epoch: 0
+  anchor_noise_candidates: 2
+  student_noise_candidates: 1
+  noise_std: 0.15
+  gradient_steps: 2
+  gradient_step_size: 0.04
+
+depth_safety:
+  max_depth: 20.0
+  fx: 80.0
+  fy: 85.3333333333
+  cx: 80.0
+  cy: 48.0
+  safety_margin: 1.2
+  temperature: 0.20
+  trajectory_points: 30
+
+evaluation:
+  split: test
+  batch_size: 16
+  max_batches: null
+  collision_distance: 0.6
+  save_visualizations: 32

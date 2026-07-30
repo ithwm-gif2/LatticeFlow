@@ -1,0 +1,17 @@
+\section{Introduction}
+
+Fast quadrotor flight through clutter requires local decisions from partial observations under tight compute and control constraints. Classical systems separate mapping, search, trajectory optimization, and control. This decomposition provides explicit structure, but repeated map updates and optimization can limit reaction speed. Learned planners instead map onboard observations directly to collision-aware motion and have enabled aggressive autonomous flight~\cite{loquercio2021learning}. A practical reactive policy must still represent left, right, over, and under alternatives and avoid changing modes erratically between replanning instants.
+
+One-stage lattice planners preserve such alternatives by predicting one terminal state and score per camera-aligned motion primitive~\cite{lu2024yopo}. Their output is efficient and directly convertible to polynomial trajectories, but one-shot regression does not model how a geometric prior is improved toward a lower-cost endpoint. Generative policies provide an alternative: diffusion policies iteratively denoise sampled actions~\cite{chi2023diffusion}, while flow matching learns a continuous vector field between source and target distributions~\cite{lipman2023flow}. Informative sources can reduce the burden of transport~\cite{jia2026a2a}, yet action histories are unavailable in independently sampled navigation datasets, and resampling random sources can destabilize reactive control.
+
+LatticeFlow uses motion primitives themselves as deterministic sources. Each cell starts from a different normalized physical terminal position with zero terminal velocity and acceleration. A depth- and state-conditioned vector field then transports all cells to cost-refined terminal states. The targets do not come from a teacher: anchors, detached current predictions, and local perturbations are ranked by privileged trajectory costs and improved by accepted gradient steps. The resulting policy is multimodal across lattice cells but deterministic within each cell, so identical inputs yield identical candidate trajectories.
+
+The deployment boundary is equally important. The neural policy receives one depth image plus goal direction, velocity, and acceleration; maps, point clouds, and distance fields are used only to construct training costs. For LiDAR deployment, registered points are projected into the trained camera model and no-return statistics are matched using real return masks. This avoids treating a deterministic sensor-model mismatch as a generic sim-to-real failure.
+
+Our contributions are:
+\begin{itemize}
+    \item an explicit physical-anchor flow formulation whose source states are distinct terminal position--velocity--acceleration tuples and whose output remains directly decodable into fifth-order trajectories;
+    \item a teacher-free target-search algorithm that combines detached student exploration with monotonic privileged-cost refinement from fully random network initialization;
+    \item local consistency regularization and an optional one-step continuity selector, evaluated separately so deterministic flow is not conflated with temporal mode stability; and
+    \item leakage-controlled evaluation on 20,000 held-out queries, matched ROS closed-loop trials, sensor-domain ablations, and two successful LiDAR-only real flights with onboard timing.
+\end{itemize}

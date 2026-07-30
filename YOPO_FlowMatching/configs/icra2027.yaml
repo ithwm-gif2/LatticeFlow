@@ -1,0 +1,90 @@
+project:
+  name: LatticeFlow_ICRA2027
+  output_root: /home/hwm/CF_YOPO/YOPO_FlowMatching/runs
+  teacher_checkpoint: /home/hwm/CF_YOPO/YOPO_FlowMatching/runs/icra2027_yopo_seed0/checkpoints/best.pth
+  initialize_backbone_from_teacher: true
+
+data:
+  root: /home/hwm/A2A_Flow_Matching/YOPO/dataset
+  train_maps: [0, 1, 2, 3, 4, 5, 6]
+  valid_maps: [7]
+  test_maps: [8, 9]
+
+runtime:
+  device: cuda
+  seed: 0
+  amp: false
+  num_workers: 4
+
+model:
+  image_feature_dim: 64
+  hidden_dim: 256
+  time_dim: 32
+  lattice_embed_dim: 16
+  flow_layers: 4
+  integration_steps: 6
+  clamp_state: true
+
+training:
+  epochs: 20
+  batch_size: 16
+  learning_rate: 0.00015
+  weight_decay: 0.000001
+  max_grad_norm: 1.0
+  save_every: 2
+  validate_every: 1
+  max_train_batches: null
+  max_val_batches: null
+  source_noise_std: 0.0
+
+loss_weights:
+  flow: 1.0
+  endpoint: 0.25
+  trajectory: 0.20
+  score: 1.0
+  depth_safety: 1.0
+  local_consistency: 0.10
+  lattice_curvature: 0.02
+
+continuity:
+  enabled: true
+  depth_noise_std: 0.005
+  observation_noise_std: [0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.10, 0.10, 0.10]
+  endpoint_weight: 1.0
+  score_weight: 0.25
+
+target_refinement:
+  enabled: true
+  include_student_seed: true
+  noise_candidates: 2
+  noise_std: 0.12
+  gradient_steps: 1
+  gradient_step_size: 0.05
+
+depth_safety:
+  max_depth: 20.0
+  fx: 80.0
+  fy: 85.3333333333
+  cx: 80.0
+  cy: 48.0
+  safety_margin: 1.2
+  temperature: 0.20
+  trajectory_points: 30
+
+evaluation:
+  split: test
+  batch_size: 16
+  max_batches: null
+  collision_distance: 0.6
+  save_visualizations: 32
+
+baseline:
+  epochs: 20
+  batch_size: 16
+  learning_rate: 0.00015
+  weight_decay: 0.000001
+  max_grad_norm: 0.1
+  save_every: 2
+  validate_every: 1
+  max_train_batches: null
+  max_val_batches: null

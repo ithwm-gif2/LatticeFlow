@@ -1,0 +1,77 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+
+# Editors and OS
+.idea/
+.vscode/
+*.swp
+*~
+.DS_Store
+
+# Training and experiment outputs
+runs/
+**/runs/
+checkpoints/
+**/checkpoints/
+saved/
+**/saved/
+tensorboard/
+**/tensorboard/
+logs/
+**/logs/
+
+# Models and deployment engines
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.engine
+*.plan
+*.trt
+
+# Datasets, sensor recordings, and diagnostics
+dataset/
+dataset_*/
+**/dataset/
+**/dataset_*/
+bags/
+**/bags/
+*.bag
+*.db3
+*.mcap
+diagnostics/
+**/diagnostics/
+real_flights.npz
+*_mask_bank_*.npz
+
+# ROS and native builds
+build/
+devel/
+install/
+log/
+.catkin_tools/
+.catkin_workspace
+CMakeFiles/
+CMakeCache.txt
+
+# LaTeX intermediates and large raster exports
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.tiff
+*.tif
+
+# Temporary files
+tmp/
+temp/
+*.tmp

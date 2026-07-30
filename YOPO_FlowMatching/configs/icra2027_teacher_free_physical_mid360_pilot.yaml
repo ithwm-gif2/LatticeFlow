@@ -1,0 +1,119 @@
+project:
+  name: LatticeFlow_TeacherFree_PhysicalAnchor_MID360_Pilot
+  output_root: /home/hwm/CF_YOPO/YOPO_FlowMatching/runs
+  # Retained only so the existing offline evaluator can load the fair YOPO
+  # comparison baseline. The teacher-free trainer never instantiates it.
+  teacher_checkpoint: /home/hwm/CF_YOPO/YOPO_FlowMatching/runs/icra2027_yopo_seed0/checkpoints/best.pth
+  evaluation_baseline_checkpoint: /home/hwm/CF_YOPO/YOPO_FlowMatching/runs/icra2027_yopo_seed0/checkpoints/best.pth
+  initialize_backbone_from_teacher: false
+  zero_initialize_flow_output: true
+  policy_variant: physical_anchor
+  training_regime: teacher_free_native_mid360_real_mask
+
+data:
+  root: /workspace/YOPO/dataset_mid360_pilot
+  camera_pitch_deg: -22.5
+  train_maps: [0]
+  valid_maps: [0]
+  test_maps: [0]
+
+runtime:
+  device: cuda
+  seed: 0
+  amp: false
+  num_workers: 4
+
+model:
+  image_feature_dim: 64
+  hidden_dim: 256
+  time_dim: 32
+  lattice_embed_dim: 16
+  flow_layers: 4
+  integration_steps: 6
+  clamp_state: true
+
+training:
+  epochs: 1
+  batch_size: 16
+  learning_rate: 0.00015
+  weight_decay: 0.000001
+  max_grad_norm: 1.0
+  save_every: 1
+  validate_every: 1
+  max_train_batches: null
+  max_val_batches: null
+  source_noise_std: 0.0
+
+loss_weights:
+  flow: 1.0
+  endpoint: 0.25
+  trajectory: 0.20
+  score: 1.0
+  depth_safety: 1.0
+  local_consistency: 0.10
+  lattice_curvature: 0.02
+  domain_consistency: 0.0
+
+lidar_domain:
+  enabled: true
+  probability: 1.0
+  mask_template_paths:
+    - /home/hwm/CF_YOPO/Lattice_Flow/diagnostics/real_lidar_mask_bank_120.npz
+  mask_template_key: raw_depth
+  template_probability: 1.0
+  template_priority_weight: 0.0
+  exact_template_pipeline: true
+  local_hole_kernel: 3
+  local_hole_min_neighbors: 5
+  local_hole_iterations: 1
+  virtual_ceiling_enabled: true
+  virtual_ceiling_world_z: 2.0
+  virtual_ceiling_stride: 2
+  virtual_ceiling_min_forward: 0.4
+  virtual_ceiling_max_forward: 0.0
+  projection_pitch_deg: 22.5
+  projection_horizontal_fov_deg: 90.0
+  projection_vertical_fov_deg: 59.0
+  max_depth: 20.0
+  min_depth: 0.05
+  far_threshold: 0.999
+  noise_std: 0.003
+  range_noise_std: 0.006
+  quantization: 0.0009765625
+  level_goal_z_threshold: 0.50
+  selection_metric: val_lidar/student_selected_cost
+
+continuity:
+  enabled: true
+  depth_noise_std: 0.005
+  observation_noise_std: [0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.10, 0.10, 0.10]
+  endpoint_weight: 1.0
+  score_weight: 0.25
+
+target_refinement:
+  enabled: true
+  include_student_seed: true
+  student_start_epoch: 0
+  anchor_noise_candidates: 2
+  student_noise_candidates: 1
+  noise_std: 0.15
+  gradient_steps: 2
+  gradient_step_size: 0.04
+
+depth_safety:
+  max_depth: 20.0
+  fx: 80.0
+  fy: 85.3333333333
+  cx: 80.0
+  cy: 48.0
+  safety_margin: 1.2
+  temperature: 0.20
+  trajectory_points: 30
+  camera_pitch_deg: -22.5
+
+evaluation:
+  split: test
+  batch_size: 16
+  max_batches: null
+  collision_distance: 0.6
+  save_visualizations: 32
